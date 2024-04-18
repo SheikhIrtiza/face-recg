@@ -38,13 +38,13 @@ while True:
 
     cv2.imshow('Face Detection', frame)
 
-    if cv2.waitKey(1) & 0xFF == ord('q'): #(continue)
-        break
+    # if cv2.waitKey(1) & 0xFF == ord('q'): #(continue)
+    #     break
 
     # Check for 'q' key press only if faces are detected (stop)
-    # if len(faces) > 0:
-    #     if cv2.waitKey(0) & 0xFF == ord('q'):
-    #         break
+    if len(faces) > 0:
+        if cv2.waitKey(0) & 0xFF == ord('q'):
+            break
 
 
 cap.release()
