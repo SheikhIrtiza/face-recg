@@ -4,7 +4,7 @@ import cv2
 import mtcnn
 import numpy as np
 import face_recognition
-# from datetime import datetime
+# from datetime import datetime.
 
 
 def extract_face(frame, face_location):
