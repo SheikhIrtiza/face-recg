@@ -1,6 +1,5 @@
 #recognizes only those faces whose encodings are present 
 
-
 import cv2
 import mtcnn
 import numpy as np
@@ -27,20 +26,13 @@ def check_image(frame):
     if frame is None:
         raise ValueError("Invalid image captured from the webcam.")
 
-# def mark_attendance(name):
-#     with open('Attendance.csv', 'a') as f:
-#         now = datetime.now()
-#         dt_string = now.strftime('%d-%m-%y,%H:%M:%S')
-#         f.write(f"{name},{dt_string}\n")
+def mark_facespresent(name):
+    with open('facespresent.csv', 'a') as f:
+        now = datetime.now()
+        dt_string = now.strftime('%d-%m-%y,%H:%M:%S')
+        f.write(f"{name},{dt_string}\n")
 
-# Initialize MTCNN detector
-detector = mtcnn.MTCNN()
-
-# Initialize webcam
-cap = cv2.VideoCapture(0)
-
-# Mode 1: Recognition
-print("Recognition Mode")
+# Load known encodings and names
 irtiza_encodings = np.load('irtiza_encodings.npy')
 mateen_encodings = np.load('mateen_encodings.npy')
 known_encodings = np.concatenate((irtiza_encodings, mateen_encodings))
@@ -53,6 +45,18 @@ with open('mateen_names.txt', 'r') as f:
     mateen_names = [line.strip() for line in f]
 
 known_names = irtiza_names + mateen_names
+
+# Initialize facespresent dictionary to keep track of recognized faces
+facespresent = {}
+
+# Initialize MTCNN detector
+detector = mtcnn.MTCNN()
+
+# Initialize webcam
+cap = cv2.VideoCapture(0)
+
+# Recognition loop
+print("Recognition Mode")
 
 while True:
     ret, frame = cap.read()
@@ -76,16 +80,23 @@ while True:
             if True in matches:
                 match_index = matches.index(True)
                 name = known_names[match_index]
-                # mark_attendance(name)
-            cv2.putText(frame, name, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (36, 255, 12), 2)
+                # Check if facespresent is already marked for this person
+                if name not in facespresent:
+                    facespresent[name] = True
+                    # Mark facespresent
+                    mark_facespresent(name)
+                    print(f"{name} marked facespresent at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
+            cv2.putText(frame, name, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (36, 255, 12), 2)
         else:
             cv2.putText(frame, "Unknown", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (36, 255, 12), 2)
-
 
     cv2.imshow('Face Recognition', frame)
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
+
+# Save facespresent dictionary to a file
+np.save('facespresent.npy', facespresent)
 
 cap.release()
 cv2.destroyAllWindows()
