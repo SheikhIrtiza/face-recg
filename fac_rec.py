@@ -1,5 +1,8 @@
 #recognizes only those faces whose encodings are present 
 
+
+
+
 import cv2
 import mtcnn
 import numpy as np
