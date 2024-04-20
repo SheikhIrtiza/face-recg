@@ -1,6 +1,4 @@
-#recognizes only those faces whose encodings are present 
-
-
+import streamlit as st
 import cv2
 import mtcnn
 import numpy as np
@@ -33,6 +31,12 @@ def mark_facespresent(name):
         dt_string = now.strftime('%d-%m-%y,%H:%M:%S')
         f.write(f"{name},{dt_string}\n")
 
+# Initialize MTCNN detector
+detector = mtcnn.MTCNN()
+
+# Initialize webcam
+cap = cv2.VideoCapture(0)  # Initialize cap here
+
 # Load known encodings and names
 irtiza_encodings = np.load('irtiza_encodings.npy')
 mateen_encodings = np.load('mateen_encodings.npy')
@@ -50,15 +54,10 @@ known_names = irtiza_names + mateen_names
 # Initialize facespresent dictionary to keep track of recognized faces
 facespresent = {}
 
-# Initialize MTCNN detector
-detector = mtcnn.MTCNN()
+# Main Streamlit app
+st.title("Face Recognition App")
 
-# Initialize webcam
-cap = cv2.VideoCapture(0)
-
-# Recognition loop
-print("Recognition Mode")
-
+# Streamlit loop
 while True:
     ret, frame = cap.read()
     try:
@@ -86,18 +85,13 @@ while True:
                     facespresent[name] = True
                     # Mark facespresent
                     mark_facespresent(name)
-                    print(f"{name} marked facespresent at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+                    st.write(f"{name} marked facespresent at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
             cv2.putText(frame, name, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (36, 255, 12), 2)
         else:
             cv2.putText(frame, "Unknown", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (36, 255, 12), 2)
 
-    cv2.imshow('Face Recognition', frame)
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
+    st.image(frame, channels="BGR")
 
 # Save facespresent dictionary to a file
 np.save('facespresent.npy', facespresent)
-
-cap.release()
-cv2.destroyAllWindows()

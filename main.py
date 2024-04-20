@@ -39,7 +39,7 @@ def detect_faces(filename):
     return faces
 
 # Filename of the image
-filename = r"D:\fac-recg\images\img8.jpeg"
+filename = r"D:\face_recognition\images\img3.jpeg"
 # Detect faces in the image
 faces = detect_faces(filename)
 # Draw bounding boxes around detected faces and count them
