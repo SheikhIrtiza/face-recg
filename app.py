@@ -99,6 +99,8 @@ while True:
     # Update the placeholder with the new frame
     frame_placeholder.image(frame, channels="BGR")
 
+    
+
 # Save facespresent dictionary to a file
     np.save('facespresent.npy', facespresent)
 

@@ -64,9 +64,6 @@ while True:
         break
 
 # Save known face encodings and names
-# np.save('irtiza.npy', known_encodings)
-# with open('known_names.txt', 'w') as f:
-
 np.save(f'encodings\{name}_encodings.npy', known_encodings)
 with open(f'encodings\{name}_names.txt', 'w') as f:
 
