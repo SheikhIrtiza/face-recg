@@ -1,3 +1,4 @@
+#this code is used to detect no. of faces appeared infront of webcam
 import cv2
 import mtcnn
 

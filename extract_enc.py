@@ -67,8 +67,8 @@ while True:
 # np.save('irtiza.npy', known_encodings)
 # with open('known_names.txt', 'w') as f:
 
-np.save(f'{name}_encodings.npy', known_encodings)
-with open(f'{name}_names.txt', 'w') as f:
+np.save(f'encodings\{name}_encodings.npy', known_encodings)
+with open(f'encodings\{name}_names.txt', 'w') as f:
 
     for name in known_names:
         f.write(f"{name}\n")
