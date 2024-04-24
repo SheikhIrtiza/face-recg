@@ -1,3 +1,4 @@
+
 import streamlit as st
 import cv2
 import mtcnn
@@ -43,7 +44,7 @@ st.title("Face Recognition and Encoding App")
 # Option for extracting and saving face encodings
 st.header("Extract and Save Face Encodings")
 name_for_encoding = st.text_input("Enter your name for encoding:")
-if st.button("Start Encoding") and name_for_encoding:
+if st.button("Start Encoding", key="start_encoding_button") and name_for_encoding:
     while True:
         ret, frame = cap.read()
         try:
@@ -66,12 +67,12 @@ if st.button("Start Encoding") and name_for_encoding:
                 st.success(f"Face encoding for {name_for_encoding} extracted and saved successfully!")
                 break
 
-        if st.button("Stop Encoding"):
+        if st.button("Stop Encoding", key="stop_encoding_button"):
             break
 
 # Option for recognizing faces
 st.header("Face Recognition")
-if st.button("Start Recognition"):
+if st.button("Start Recognition", key="start_recognition_button"):
     known_encodings = []
     known_names = []
 
@@ -125,7 +126,7 @@ if st.button("Start Recognition"):
 
         st.image(frame, channels="BGR", caption="Recognized Faces")
 
-        if st.button("Stop Recognition"):
+        if st.button("Stop Recognition", key="stop_recognition_button"):
             break
 
 cap.release()
