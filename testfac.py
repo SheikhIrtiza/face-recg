@@ -57,12 +57,12 @@ facespresent = {}
 # Main Streamlit app
 # st.title("Face Recognition App")
 st.markdown("""
-    <h1 style='text-align: center; color: blue;'>
+    <h1 style='text-align: center; color: grey;'>
         🌟 <b>Face Recognition App</b> 🌟
     </h1>
     """, unsafe_allow_html=True)
 # Load and display the logo image
-logo_path = 'download.png'  # Replace with your logo image path
+logo_path = 'image.png'  # Replace with your logo image path
 st.image(logo_path, use_column_width=True)
 # st.title("🌟 **Face Recognition App** 🌟")
 
