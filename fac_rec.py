@@ -34,15 +34,15 @@ def mark_facespresent(name):
         f.write(f"{name},{dt_string}\n")
 
 # Load known encodings and names
-irtiza_encodings = np.load('irtiza_encodings.npy')
-mateen_encodings = np.load('mateen_encodings.npy')
+irtiza_encodings = np.load('encodings\irtiza_encodings.npy')
+mateen_encodings = np.load('encodings\mateen_encodings.npy')
 known_encodings = np.concatenate((irtiza_encodings, mateen_encodings))
 
 # Load names from respective files
-with open('irtiza_names.txt', 'r') as f:
+with open('encodings\irtiza_names.txt', 'r') as f:
     irtiza_names = [line.strip() for line in f]
 
-with open('mateen_names.txt', 'r') as f:
+with open('encodings\mateen_names.txt', 'r') as f:
     mateen_names = [line.strip() for line in f]
 
 known_names = irtiza_names + mateen_names

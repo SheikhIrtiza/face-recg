@@ -1,4 +1,3 @@
-
 import streamlit as st
 import cv2
 import mtcnn
@@ -26,92 +25,25 @@ def check_image(frame):
     if frame is None:
         raise ValueError("Invalid image captured from the webcam.")
 
-def recognize_faces(frame, known_encodings, known_names):
-    faces = detect_faces(detector, frame)
-    for face in faces:
-        x, y, width, height = face['box']
-        face_img = extract_face(frame, (x, y, width, height))
-        face_encoding = face_recognition.face_encodings(face_img)
-        if face_encoding:
-            matches = face_recognition.compare_faces(known_encodings, face_encoding[0])
-            name = "Unknown"
-            if True in matches:
-                match_index = matches.index(True)
-                name = known_names[match_index]
-            cv2.putText(frame, name, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (36, 255, 12), 2)
-        else:
-            cv2.putText(frame, "Unknown", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (36, 255, 12), 2)
-    return frame
-
-def extract_and_save_encoding(frame, name):
-    faces = detect_faces(detector, frame)
-    if len(faces) == 0:
-        st.warning("No faces detected. Please make sure your face is visible.")
-        return
-
-    # Display the captured frame with face boxes
-    draw_facebox(frame, faces)
-    st.image(frame, channels="BGR", caption="Detected Faces")
-
-    if len(faces) == 1:
-        selected_face = faces[0]
-    else:
-        st.write("Multiple faces detected. Please select the face to extract encoding:")
-        selected_face_index = st.selectbox("Select Face", range(len(faces)))
-        selected_face = faces[selected_face_index]
-
-    x, y, width, height = selected_face['box']
-    face_img = extract_face(frame, (x, y, width, height))
-    face_encoding = face_recognition.face_encodings(face_img)
-
-    if face_encoding:
-        np.save(f'encodings/{name}_encodings.npy', face_encoding)
-        st.success(f"Face encoding for {name} extracted and saved successfully!")
-    else:
-        st.error("Failed to extract face encoding.")
+def mark_facespresent(name):
+    with open('facespresent.csv', 'a') as f:
+        now = datetime.now()
+        dt_string = now.strftime('%d-%m-%y,%H:%M:%S')
+        f.write(f"{name},{dt_string}\n")
 
 # Initialize MTCNN detector
 detector = mtcnn.MTCNN()
 
-# Load known encodings and names
-irtiza_encodings = np.load('encodings/irtiza_encodings.npy')
-mateen_encodings = np.load('encodings/mateen_encodings.npy')
-known_encodings = np.concatenate((irtiza_encodings, mateen_encodings))
+# Initialize webcam
+cap = cv2.VideoCapture(0)
 
-# Load names from respective files
-with open('encodings/irtiza_names.txt', 'r') as f:
-    irtiza_names = [line.strip() for line in f]
+# Streamlit app
+st.title("Face Recognition and Encoding App")
 
-with open('encodings/mateen_names.txt', 'r') as f:
-    mateen_names = [line.strip() for line in f]
-
-known_names = irtiza_names + mateen_names
-
-# Main Streamlit app
-st.title("Face Recognition App")
-
-# Create buttons for recognition and encodings
-if st.button("Face Recognition", key="recognition_button"):  # Add key here
-    st.write("Recognition Mode")
-    cap = cv2.VideoCapture(0)  # Initialize webcam
-    while True:
-        ret, frame = cap.read()
-        try:
-            check_image(frame)
-        except ValueError as e:
-            st.error(e)
-            continue
-
-        recognized_frame = recognize_faces(frame, known_encodings, known_names)
-        st.image(recognized_frame, channels="BGR", caption="Recognized Faces")
-        if st.button("Stop Recognition", key="stop_recognition_button"):  # Add key here
-            break
-    cap.release()
-    cv2.destroyAllWindows()
-
-if st.button("Face Encoding", key="encoding_button"):  # Add key here
-    st.write("Encoding Mode")
-    cap = cv2.VideoCapture(0)  # Initialize webcam
+# Option for extracting and saving face encodings
+st.header("Extract and Save Face Encodings")
+name_for_encoding = st.text_input("Enter your name for encoding:")
+if st.button("Start Encoding") and name_for_encoding:
     while True:
         ret, frame = cap.read()
         try:
@@ -124,12 +56,77 @@ if st.button("Face Encoding", key="encoding_button"):  # Add key here
         draw_facebox(frame, faces)
         st.image(frame, channels="BGR", caption="Detected Faces")
 
-        if st.button("Extract and Save Encoding", key="extract_encoding_button"):  # Add key here
-            name = st.text_input("Enter your name:")
-            if name:
-                extract_and_save_encoding(frame, name)
+        # Extract and save face encodings
+        for face in faces:
+            x, y, width, height = face['box']
+            face_img = extract_face(frame, (x, y, width, height))
+            face_encoding = face_recognition.face_encodings(face_img)
+            if face_encoding:
+                np.save(f'encodings/{name_for_encoding}_encodings.npy', face_encoding)
+                st.success(f"Face encoding for {name_for_encoding} extracted and saved successfully!")
+                break
 
-        if st.button("Stop Encoding", key="stop_encoding_button"):  # Add key here
+        if st.button("Stop Encoding"):
             break
-    cap.release()
-    cv2.destroyAllWindows()
+
+# Option for recognizing faces
+st.header("Face Recognition")
+if st.button("Start Recognition"):
+    known_encodings = []
+    known_names = []
+
+    # Load known encodings and names
+    irtiza_encodings = np.load('encodings/irtiza_encodings.npy')
+    mateen_encodings = np.load('encodings/mateen_encodings.npy')
+    known_encodings.extend(irtiza_encodings)
+    known_encodings.extend(mateen_encodings)
+
+    with open('encodings/irtiza_names.txt', 'r') as f:
+        irtiza_names = [line.strip() for line in f]
+
+    with open('encodings/mateen_names.txt', 'r') as f:
+        mateen_names = [line.strip() for line in f]
+
+    known_names.extend(irtiza_names)
+    known_names.extend(mateen_names)
+    facespresent = {}
+
+    while True:
+        ret, frame = cap.read()
+        try:
+            check_image(frame)
+        except ValueError as e:
+            st.error(e)
+            continue
+
+        faces = detect_faces(detector, frame)
+        draw_facebox(frame, faces)
+
+        # Recognize faces
+        for face in faces:
+            x, y, width, height = face['box']
+            face_img = extract_face(frame, (x, y, width, height))
+            face_encoding = face_recognition.face_encodings(face_img)
+            if face_encoding:
+                matches = face_recognition.compare_faces(known_encodings, face_encoding[0])
+                name = "Unknown"
+                if True in matches:
+                    match_index = matches.index(True)
+                    name = known_names[match_index]
+                    # Mark faces present
+                    if name not in facespresent:
+                        facespresent[name] = True
+                        mark_facespresent(name)
+                        st.write(f"{name} marked present at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+
+                cv2.putText(frame, name, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (36, 255, 12), 2)
+            else:
+                cv2.putText(frame, "Unknown", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (36, 255, 12), 2)
+
+        st.image(frame, channels="BGR", caption="Recognized Faces")
+
+        if st.button("Stop Recognition"):
+            break
+
+cap.release()
+cv2.destroyAllWindows()
